@@ -129,8 +129,22 @@ class KeyGen{
 } 
  
  
-function main() { 
+function main() {
     const arr = process.argv.slice(2); 
+
+    if(new Set(arr).size !== arr.length){
+      console.log('Moves must be non-repeating.')
+    }
+
+    if(arr.length % 2 === 0  || arr.length < 3 || new Set(arr).size !== arr.length){
+      console.log('You must provide an odd number of non-repeating moves.');
+      console.log('Usage:');
+      console.log('node index.js move1 move2 move3 ...');
+      console.log('Example: node index.js Rock Paper Scissors');
+      return;
+    }
+
+
     const game = new Game(arr); 
     const rules = new Rules(arr); 
     const key = new KeyGen();
