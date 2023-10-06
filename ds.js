@@ -1,60 +1,44 @@
-function winMoves(move, moves){
-      const half = moves.length / 2; 
-      const winMoves = []; 
-      for(let i = 1; i <= half; i++){ 
-        const index = (move + i) % moves.length; 
-        winMoves.push(moves[index]); 
-      } 
-      return winMoves; 
+const crypto = require('crypto');
+const readline = require('readline');
+
+function generateRandomKey(lengthInBytes) {
+  return crypto.randomBytes(lengthInBytes);
 }
 
-function loseMoves(move, moves){
-  const half = moves.length/2; 
-      const loseMoves = []; 
-      for(let i = 1; i<=half; i++){ 
-        const index = (move - i +  moves.length) % moves.length; 
-        loseMoves.push(moves[index]); 
-      }
-
-      return loseMoves;
+function computeHMAC(key, message) {
+  const hmac = crypto.createHmac('sha256', key); // Используем SHA-256 для HMAC
+  hmac.update(message);
+  return hmac.digest('hex'); // Возвращаем HMAC в формате шестнадцатеричной строки
 }
 
+function main() {
+  const keyLengthInBytes = 32; // Длина ключа в байтах (32 байта = 256 бит)
 
-function checkForWin(userChoice, computerMove, moves){ 
+  const randomKey = generateRandomKey(keyLengthInBytes);
+  const moves = ['Rock', 'Paper', 'Scissors'];
 
-    const winningMoves = winMoves(userChoice, moves);
-    const losingMoves = loseMoves(userChoice, moves);
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout
+  });
 
-    if(winningMoves.includes(computerMove)){
-      return "Win!";
-    }else if(losingMoves.includes(computerMove)){
-      return "Loss!";
-    }else{
-      return "Draw!";
+  console.log(`Generated random key: ${randomKey.toString('hex')}`);
+
+  rl.question('Enter your move: ', (userChoice) => {
+    if (moves.includes(userChoice)) {
+      const computerMove = moves[Math.floor(Math.random() * moves.length)];
+      console.log(`Computer move: ${computerMove}`);
+
+      const message = `User: ${userChoice}, Computer: ${computerMove}`;
+      const hmac = computeHMAC(randomKey, message);
+      
+      console.log(`HMAC: ${hmac}`);
+    } else {
+      console.log('Invalid move. Please enter one of: Rock, Paper, Scissors');
     }
-  }
-
-
-function createTable(arr){
-  const tableData = [[]];
-  tableData[0][0] = "v PC\\User >";
-  for (let i = 0; i < arr.length; i++) {
-    tableData[0][i + 1] = arr[i];
-  }
-
-  for (let i = 0; i < arr.length; i++) {
-    tableData.push([]);
-    tableData[i + 1][0] = arr[i];
-  }
-
-  for (let i = 1; i <= arr.length; i++) {
-    for (let j = 1; j <= arr.length; j++) {
-        tableData[i][j] = checkForWin(i, arr[j], arr);
-    }
-  }
-
-  return tableData;
+    
+    rl.close();
+  });
 }
 
-const arr = ["a","b","c","d","e", "f", "g"];
-console.log(createTable(arr));
+main();

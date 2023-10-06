@@ -1,4 +1,5 @@
-const readline = require('readline') 
+const readline = require('readline')
+const crypto = require('crypto');
  
 class Game {  
     computerMove(moves){ 
@@ -70,7 +71,7 @@ class Rules{
         let row = '|';
         let line = "-";
         for (let j = 0; j < data[i].length; j++) {
-          row += data[i][j];
+          row += " " + data[i][j] + " ";
           for(let k = 0; k < width - data[i][j].length-1; k++){
             row += " ";
           }
@@ -110,12 +111,21 @@ class Rules{
  
  
 class Hmac{ 
- 
+  computeHmac(key, computerMove){
+    const hmac = crypto.createHmac('sha256', key);
+    hmac.update(computerMove);
+    return hmac.digest('hex');
+  }
 } 
  
  
 class KeyGen{ 
- 
+
+  generateRandomKey(lenInBytes){
+    const key = crypto.randomBytes(lenInBytes);
+    return key.toString('hex');
+  }
+
 } 
  
  
@@ -123,7 +133,12 @@ function main() {
     const arr = process.argv.slice(2); 
     const game = new Game(arr); 
     const rules = new Rules(arr); 
- 
+    const key = new KeyGen();
+    const hmac = new Hmac();
+
+    const randomKey = key.generateRandomKey(32);
+    console.log(`HMAC: ${randomKey}`);
+    
     arr.forEach((el, index)=>{console.log(`${index+1} - ${el}`)}) 
     console.log('0 - Exit'); 
     console.log('? - Help'); 
@@ -139,9 +154,11 @@ function main() {
       } else if (!isNaN(userChoice) && userChoice >= 1 && userChoice <= arr.length) { 
         const userMove = userChoice - 1; 
         const computerMove = game.computerMove(arr); 
+        const hmacComputerMove = hmac.computeHmac(randomKey, computerMove);
         console.log(`Your move: ${arr[userMove]}`); 
         console.log(`Computer move: ${computerMove}`); 
-        console.log(game.checkForWin(userMove, computerMove, arr)); 
+        console.log(game.checkForWin(userMove, computerMove, arr));
+        console.log(`HMAC key: ${hmacComputerMove}`);
          
       }else if(userChoice === "0"){ 
         rl.close();  
