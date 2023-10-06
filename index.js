@@ -39,30 +39,73 @@ class Game {
       }else{
         return "It's draw!";
       }
-    } 
+    }
+
+    createTable(arr){
+      const tableData = [];
+
+  
+      for (let i = 0; i < arr.length; i++) {
+        tableData.push([]);
+      }
+  
+      for (let i = 0; i < arr.length; i++) {
+        for (let j = 0; j < arr.length; j++) {
+            tableData[i][j] = this.checkForWin(i, arr[j], arr);
+        }
+      }
+  
+      return tableData;
+    }
  
      
 } 
  
  
-class Rules{ 
-  constructor(moves){ 
-    this.moves = moves 
-  } 
- 
-  createTable(){ 
-    const a = "v PC/User >"; 
-    const len = this.moves.join(''); 
- 
-    let width = a + len; 
+class Rules{
+    drawTable(data) {
+      let lastline = '-'; 
+      const width = 15;
+      for (let i = 0; i < data.length; i++) {
+        let row = '|';
+        let line = "-";
+        for (let j = 0; j < data[i].length; j++) {
+          row += data[i][j];
+          for(let k = 0; k < width - data[i][j].length-1; k++){
+            row += " ";
+          }
+          row += "|";
+        }
+        
+        for(let l = 0; l < row.length - 3; l++){
+          line += "-";
+        }
+
+        lastline = line;
+
+        console.log('+' + line + '+');
+        line = "-";
+        console.log(row);
+      }
     
-    let line = "+";
-    for(let i = 0; i<width.length; i++){ 
-        line+= "-";
+      console.log('+' + lastline + '+');
     }
-    line += "+"; 
-    console.log(line);
-  } 
+
+
+    displayTheTable(tableData, arr){
+      const moves = [];
+      moves[0] = "v PC\\User >";
+
+      for (let i = 0; i < arr.length; i++) {
+        moves[i + 1] = arr[i];
+        tableData[i].unshift(arr[i]);
+      }
+
+      tableData.unshift(moves);
+
+      this.drawTable(tableData);
+    }
+
 } 
  
  
@@ -92,11 +135,11 @@ function main() {
    
     rl.question('Enter your move: ', (userChoice) => { 
       if (userChoice === '?') { 
-        rules.createTable(); 
+        rules.displayTheTable(game.createTable(arr), arr); 
       } else if (!isNaN(userChoice) && userChoice >= 1 && userChoice <= arr.length) { 
         const userMove = userChoice - 1; 
         const computerMove = game.computerMove(arr); 
-        console.log(`Your move: ${userMove + 1}`); 
+        console.log(`Your move: ${arr[userMove]}`); 
         console.log(`Computer move: ${computerMove}`); 
         console.log(game.checkForWin(userMove, computerMove, arr)); 
          
